@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Request Screenshot | DriveWorks</title>
+    <style>
+        body { background: #eee; padding: 1em 2em; margin: 0; font-family: sans-serif; }
+        img { max-width: 100%; }
+    </style>
+</head>
+
+<body>
+
+    <h1>Generate a static image from a 3D Preview Control</h1>
+
+    <div id="output">Loading...</div>
+
+    <script src="config.js"></script>
+    <script>
+
+        // Run on client load
+        async function dwClientLoaded() {
+            try {
+
+                // Create DriveWorks API client
+                const DW_CLIENT = new window.DriveWorksLiveClient(config.serverUrl);
+
+                // Login to group
+                await DW_CLIENT.loginGroup(config.groupAlias);
+
+                // Create Specification
+                const specification = await DW_CLIENT.createSpecification(config.groupAlias, config.projectName);
+
+                // [OPTIONAL] Pass options as Constants (ensure Constants are exposed, with canEdit="true", in DriveWorksConfigUser.xml)
+                if (config.constantName) {
+                    await DW_CLIENT.getSpecificationConstantByName(config.groupAlias, specification.id, config.constantName);
+                    await DW_CLIENT.updateConstantValue(config.groupAlias, specification.id, config.constantName, "#00ff00");
+                }
+
+                // Request screenshot
+                const screenshotRequest = await DW_CLIENT.requestScreenshot(config.groupAlias, specification.id, "MyPreviewControl", {
+                    screenshotWidth: "500",
+                    screenshotHeight: "500",
+                    screenshotRotationZoom: "-150|15|4|0.5|1|1.5" // RotateX|RotateY|Zoom or RotateX|RotateY|Zoom|PanX|PanY|PanZ
+                });
+
+                // Render screenshot
+                const screenshot = screenshotRequest.screenshotResult.previewUrl;
+                document.querySelector("#output").innerHTML = `<img src="data:image/png;base64,${screenshot}" />`;
+
+            } catch (error) {
+                console.log(error);
+                document.querySelector("#output").innerHTML = error;
+            }
+        };
+    </script>
+
+    <!-- Option A) Directly load Client Library -->
+    <!-- <script src="https://YOUR-THEME-SERVER.COM/DriveworksLiveIntegrationClient.min.js" onload="dwClientLoaded()"></script> -->
+
+    <!-- Option B) Inject Client Library dynamically from server url in config file -->
+    <script>
+        (function(doc, script) {
+            script = doc.createElement("script");
+            script.src = config.serverUrl + "/DriveWorksLiveIntegrationClient.min.js";
+            script.onload = () => dwClientLoaded(); // Custom local function run when client has loaded
+            doc.body.appendChild(script);
+        }(document));
+    </script>
+
+</body>
+</html>

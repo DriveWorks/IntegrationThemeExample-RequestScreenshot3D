@@ -1,6 +1,6 @@
 # DriveWorks Live - Integration Theme Example - Request screenshot from 3D Preview
 ### Version: 1.0.0
-### Minimum DriveWorks Version: 18.0
+#### Minimum DriveWorks Version: 18.0
 
 A distributable example that renders a static PNG image/screenshot from a 3D Preview Box Control.
 
